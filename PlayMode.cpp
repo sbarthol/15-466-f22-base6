@@ -15,6 +15,9 @@
 #include <random>
 #include <array>
 
+PlayMode::PlayMode(Client &client_) : client(client_) {
+}
+
 PlayMode::~PlayMode() {
 }
 

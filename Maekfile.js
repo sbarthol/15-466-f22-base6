@@ -138,11 +138,8 @@ if (maek.OS === 'windows') {
 const client_names = [
 	maek.CPP('client.cpp'),
 	maek.CPP('PlayMode.cpp'),
-	maek.CPP('LitColorTextureProgram.cpp'),
 	//maek.CPP('ColorTextureProgram.cpp'),  //not used right now, but you might want it
-	maek.CPP('Sound.cpp'),
-	maek.CPP('load_wav.cpp'),
-	maek.CPP('load_opus.cpp')
+	
 ];
 
 const server_names = [
@@ -150,6 +147,10 @@ const server_names = [
 ];
 
 const common_names = [
+	maek.CPP('Sound.cpp'),
+	maek.CPP('load_wav.cpp'),
+	maek.CPP('load_opus.cpp'),
+	maek.CPP('LitColorTextureProgram.cpp'),
 	maek.CPP('Game.cpp'),
 	maek.CPP('data_path.cpp'),
 	maek.CPP('PathFont.cpp'),
