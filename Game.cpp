@@ -13,8 +13,10 @@
 
 Player *Game::spawn_player() {
 	if(!gun_spawned) {
+		gun_spawned = true;
 		return &gun;
 	} else if(!chicken_spawned) {
+		chicken_spawned = true;
 		return &chicken;
 	} else {
 		return nullptr;
@@ -173,6 +175,7 @@ void Game::send_state_message(Connection *connection_,
   // send player info helper:
   auto send_player = [&](Player const &player) {
     connection.send(player.position);
+		connection.send(player.gun_fired);
   };
 
   // player count:
@@ -209,11 +212,11 @@ bool Game::recv_state_message(Connection *connection_) {
     at += sizeof(*val);
   };
 
+	read(&(gun.position));
+	read(&(gun.gun_fired));
   read(&(chicken.position));
 	read(&(chicken.gun_fired));
-  read(&(gun.position));
-	read(&(gun.gun_fired));
-
+  
   if (at != size) throw std::runtime_error("Trailing data in state message.");
 
   // delete message from buffer:
