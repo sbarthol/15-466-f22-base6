@@ -43,18 +43,20 @@ struct Player {
 	} controls;
 
 	//player state (sent from server):
+	bool gun_fired = false;
 	glm::vec3 position = glm::vec3(0.0f);
-	std::string name = "";
 };
 
 struct Game {
-	std::list< Player > players; //(using list so they can have stable addresses)
-
 	Player *spawn_player(); //add player the end of the players list (may also, e.g., play some spawn anim)
 	void remove_player(Player *); //remove player from game (may also, e.g., play some despawn anim)
+	Player gun, chicken;
 
 	std::mt19937 mt; //used for spawning players
 	uint32_t next_player_number = 1; //used for naming players
+
+	bool gun_spawned = false;
+	bool chicken_spawned = false;
 
 	Game();
 
@@ -64,26 +66,6 @@ struct Game {
 	//constants:
 	//the update rate on the server:
 	inline static constexpr float Tick = 1.0f / 30.0f;
-
-	Scene::Transform *chicken = nullptr;
-	Scene::Transform *gun = nullptr;
-	Scene::Transform *wall = nullptr;
-	Scene::Transform *impact = nullptr;
-
-	// angle between 0 and 360 degrees,
-	// mathematical
-	size_t chicken_dir = 0;
-	size_t hits = 0;
-	size_t gunshots = 0;
-
-	//camera:
-	Scene::Camera *camera = nullptr;
-
-	//local copy of the game scene (so code can change it during gameplay):
-	Scene scene;
-
-	void fire_gun();
-	
 
 	//---- communication helpers ----
 

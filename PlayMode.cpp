@@ -15,10 +15,92 @@
 #include <random>
 #include <array>
 
-PlayMode::PlayMode(Client &client_) : client(client_) {
+GLuint chicken_meshes_for_lit_color_texture_program = 0;
+Load< MeshBuffer > chicken_meshes(LoadTagDefault, []() -> MeshBuffer const * {
+	MeshBuffer const *ret = new MeshBuffer(data_path("chicken.pnct"));
+	chicken_meshes_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
+	return ret;
+});
+
+Load< Sound::Sample > explosion_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	// Created on https://jfxr.frozenfractal.com/ by taking inspiration from the "explosion" template
+	return new Sound::Sample(data_path("explosion.wav"));
+});
+
+Load< Sound::Sample > hit_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	// Created on https://jfxr.frozenfractal.com/ by taking inspiration from the "hit/hurt" template
+	return new Sound::Sample(data_path("hit.wav"));
+});
+
+Load< Scene > chicken_scene(LoadTagDefault, []() -> Scene const * {
+	return new Scene(data_path("chicken.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
+		if (mesh_name == "Impact") {
+			return;
+		}
+		Mesh const &mesh = chicken_meshes->lookup(mesh_name);
+
+		scene.drawables.emplace_back(transform);
+		Scene::Drawable &drawable = scene.drawables.back();
+
+		drawable.pipeline = lit_color_texture_program_pipeline;
+
+		drawable.pipeline.vao = chicken_meshes_for_lit_color_texture_program;
+		drawable.pipeline.type = mesh.type;
+		drawable.pipeline.start = mesh.start;
+		drawable.pipeline.count = mesh.count;
+
+	});
+});
+
+float dist_sqr(float x1, float y1, float x2, float y2) {
+	return (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
 }
 
-PlayMode::~PlayMode() {
+void PlayMode::fire_gun() {
+	Mesh const &mesh = chicken_meshes->lookup("Impact");
+
+		Scene::Transform *transform = new Scene::Transform();
+		transform->position = glm::vec3(camera->transform->position.x, impact->position.y, camera->transform->position.z - 3);
+		transform->scale = impact->scale;
+		transform->rotation = impact->rotation;
+
+		scene.drawables.emplace_back(Scene::Drawable(transform));
+		Scene::Drawable &drawable = scene.drawables.back();
+
+		drawable.pipeline = lit_color_texture_program_pipeline;
+
+		drawable.pipeline.vao = chicken_meshes_for_lit_color_texture_program;
+		drawable.pipeline.type = mesh.type;
+		drawable.pipeline.start = mesh.start;
+		drawable.pipeline.count = mesh.count;
+
+		// check for hit
+		if (dist_sqr(transform->position.x, transform->position.z, chicken->position.x, chicken->position.z) < 0.5f) {
+			hits++;
+			Sound::play(*hit_sample);
+		}
+		Sound::play(*explosion_sample);
+		gunshots++;
+}
+
+Load< Sound::Sample > dusty_floor_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("dusty-floor.opus"));
+});
+
+PlayMode::~PlayMode() {}
+
+PlayMode::PlayMode(Client &client_) : scene(*chicken_scene), client(client_)  {
+	//get pointers to leg for convenience:
+	for (auto &transform : scene.transforms) {
+		if (transform.name == "Chicken") chicken = &transform;
+		else if (transform.name == "Gun") gun = &transform;
+		else if (transform.name == "Wall") wall = &transform;
+		else if (transform.name == "Impact") impact = &transform;
+	}
+	
+	//get pointer to camera for convenience:
+	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
+	camera = &scene.cameras.front();
 }
 
 bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
@@ -103,15 +185,18 @@ void PlayMode::update(float elapsed) {
 			}
 		}
 	}, 0.0);
+
+	// Todo: update here
+	printf("chicken pos = (%f, %f, %f)\n", game.chicken.position.x, game.chicken.position.y, game.chicken.position.z);
+	printf("gun pos = (%f, %f, %f)\n", game.gun.position.x, game.gun.position.y, game.gun.position.z);
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//update camera aspect ratio for drawable:
-	game.camera->aspect = float(drawable_size.x) / float(drawable_size.y);
+	camera->aspect = float(drawable_size.x) / float(drawable_size.y);
 
 	//set up light type and position for lit_color_texture_program:
-	// TODO: consider using the Light(s) in the scene to do this
 	glUseProgram(lit_color_texture_program->program);
 	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 1);
 	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
@@ -125,7 +210,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
 
-	game.scene.draw(*game.camera);
+	scene.draw(*camera);
 
 	{ //use DrawLines to overlay some text:
 		glDisable(GL_DEPTH_TEST);
@@ -148,20 +233,20 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 			glm::u8vec4(0xff, 0xff, 0xff, 0x00));
 
-		lines.draw_text("Shots: " + std::to_string(game.gunshots),
+		lines.draw_text("Shots: " + std::to_string(gunshots),
 			glm::vec3(-aspect + 0.1f * H, 0.9 - 0.1f * H, 0.0),
 			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 			glm::u8vec4(0x00, 0x00, 0x00, 0x00));
-		lines.draw_text("Shots: " + std::to_string(game.gunshots),
+		lines.draw_text("Shots: " + std::to_string(gunshots),
 			glm::vec3(-aspect + 0.1f * H + ofs, 0.9 - 0.1f * H + ofs, 0.0),
 			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 			glm::u8vec4(0xff, 0xff, 0xff, 0x00));
 
-		lines.draw_text("Hits: " + std::to_string(game.hits),
+		lines.draw_text("Hits: " + std::to_string(hits),
 			glm::vec3(-aspect + 0.1f * H, 0.77 - 0.1f * H, 0.0),
 			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 			glm::u8vec4(0x00, 0x00, 0x00, 0x00));
-		lines.draw_text("Hits: " + std::to_string(game.hits),
+		lines.draw_text("Hits: " + std::to_string(hits),
 			glm::vec3(-aspect + 0.1f * H + ofs, 0.77 - 0.1f * H + ofs, 0.0),
 			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 			glm::u8vec4(0xff, 0xff, 0xff, 0x00));
