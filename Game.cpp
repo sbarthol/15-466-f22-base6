@@ -176,9 +176,7 @@ void Game::send_state_message(Connection *connection_,
   };
 
   // player count:
-  if (connection_player) send_player(*connection_player);
   for (auto const &player : {gun, chicken}) {
-    if (&player == connection_player) continue;
     send_player(player);
   }
 
@@ -212,6 +210,7 @@ bool Game::recv_state_message(Connection *connection_) {
   };
 
   read(&(chicken.position));
+	read(&(chicken.gun_fired));
   read(&(gun.position));
 	read(&(gun.gun_fired));
 
