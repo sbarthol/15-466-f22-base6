@@ -223,6 +223,7 @@ void Game::update(float elapsed) {
 		//glm::vec3 frame_forward = -frame[2];
 
 		camera->transform->position += move.x * frame_right + move.y * frame_up;
+		gun_player.position = camera->transform->position;
 
 		//reset button press counters:
 		gun_player.controls.left.downs = 0;
@@ -261,6 +262,7 @@ void Game::update(float elapsed) {
 
 		chicken->position.x += move.x;
 		chicken->position.z += move.y;
+		chicken_player.position = chicken->position;
 
 		//reset button press counters:
 		chicken_player.controls.left.downs = 0;
