@@ -123,8 +123,6 @@ PlayMode::PlayMode(Client &client_) : scene(*chicken_scene), client(client_) {
         std::to_string(scene.cameras.size()));
   camera = &scene.cameras.front();
 
-	printf("gun pos = (%f, %f, %f)\n", camera->transform->position.x, camera->transform->position.y,
-         camera->transform->position.z);
 }
 
 bool PlayMode::handle_event(SDL_Event const &evt,
@@ -243,11 +241,6 @@ void PlayMode::update(float elapsed) {
         }
       },
       0.0);
-
-  // Todo: update here
-  // printf("chicken pos = (%f, %f, %f)\n", game.chicken.position.x,
-  // game.chicken.position.y, game.chicken.position.z); printf("gun pos = (%f,
-  // %f, %f)\n", game.gun.position.x, game.gun.position.y, game.gun.position.z);
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
