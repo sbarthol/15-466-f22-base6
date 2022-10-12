@@ -68,8 +68,8 @@ void PlayMode::fire_gun() {
 
   Scene::Transform *transform = new Scene::Transform();
   transform->position =
-      glm::vec3(camera->transform->position.x, impact->position.y,
-                camera->transform->position.z - 3);
+      glm::vec3(gun->position.x, impact->position.y,
+                gun->position.z - 3);
   transform->scale = impact->scale;
   transform->rotation = impact->rotation;
 
@@ -107,6 +107,9 @@ PlayMode::PlayMode(Client &client_) : scene(*chicken_scene), client(client_) {
     if (transform.name == "Chicken")
       {
 				chicken = &transform;
+			}
+			else if (transform.name == "Gun") {
+				gun = &transform;
 			}
     
     else if (transform.name == "Wall")
@@ -218,7 +221,7 @@ void PlayMode::update(float elapsed) {
             glm::vec3 frame_up = frame[1];*/
             // glm::vec3 frame_forward = -frame[2];
 
-            camera->transform->position = game.gun.position;
+            gun->position = game.gun.position;
           }
 
           {  // update listener to camera position:

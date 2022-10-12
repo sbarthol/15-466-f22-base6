@@ -113,7 +113,7 @@ void Game::update(float elapsed) {
 	{
 
 		//combine inputs into a move:
-		constexpr float GunSpeed = 5.0f;
+		constexpr float GunSpeed = 2.5f;
 		glm::vec2 move = glm::vec2(0.0f);
 		if (gun.controls.left.pressed && !gun.controls.right.pressed) move.x =-1.0f;
 		if (!gun.controls.left.pressed && gun.controls.right.pressed) move.x = 1.0f;
@@ -124,7 +124,7 @@ void Game::update(float elapsed) {
 		if (move != glm::vec2(0.0f)) move = glm::normalize(move) * GunSpeed * elapsed;
 
 		gun.position.x += move.x;
-		gun.position.z += move.y;
+		gun.position.y += move.y;
 
 		//reset button press counters:
 		gun.controls.left.downs = 0;

@@ -26,6 +26,7 @@ struct PlayMode : Mode {
 	Game game;
 
 	Scene::Transform *chicken = nullptr;
+	Scene::Transform *gun = nullptr;
 	Scene::Transform *wall = nullptr;
 	Scene::Transform *impact = nullptr;
 
