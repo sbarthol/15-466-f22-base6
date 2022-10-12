@@ -68,8 +68,8 @@ void PlayMode::fire_gun() {
 
   Scene::Transform *transform = new Scene::Transform();
   transform->position =
-      glm::vec3(gun->position.x, impact->position.y,
-                gun->position.y - 3);
+      glm::vec3(game.gun.position.x - 1.5, impact->position.y,
+                game.gun.position.z - 1.5);
   transform->scale = impact->scale;
   transform->rotation = impact->rotation;
 
@@ -173,6 +173,17 @@ bool PlayMode::handle_event(SDL_Event const &evt,
 }
 
 void PlayMode::update(float elapsed) {
+	//combine inputs into a move:
+		constexpr float PlayerSpeed = 5.0f;
+		glm::vec2 move = glm::vec2(0.0f);
+		if (controls.left.pressed && !controls.right.pressed) move.x =-1.0f;
+		if (!controls.left.pressed && controls.right.pressed) move.x = 1.0f;
+		if (controls.down.pressed && !controls.up.pressed) move.y =-1.0f;
+		if (!controls.down.pressed && controls.up.pressed) move.y = 1.0f;
+
+		//make it so that moving diagonally doesn't go faster:
+		if (move != glm::vec2(0.0f)) move = glm::normalize(move) * PlayerSpeed * elapsed;
+
   // queue data for sending to server:
   controls.send_controls_message(&client.connection);
 
@@ -210,15 +221,25 @@ void PlayMode::update(float elapsed) {
           }
 
 
-          // move camera:
-          {
-            /*glm::mat4x3 frame = camera->transform->make_local_to_parent();
-            glm::vec3 frame_right = frame[0];
-            glm::vec3 frame_up = frame[1];*/
-            // glm::vec3 frame_forward = -frame[2];
+         
+        }
+      },
+      0.0);
 
+		 // move gun:
+          {
+            
             gun->position = game.gun.position;
+						
           }
+
+					// move camera
+					{
+							
+							camera->transform->position.x += move.x;
+							camera->transform->position.z += move.y;
+
+					}
 
           {  // update listener to camera position:
             glm::mat4x3 frame = camera->transform->make_local_to_parent();
@@ -237,9 +258,6 @@ void PlayMode::update(float elapsed) {
           {  // move chicken
             chicken->position = game.chicken.position;
           }
-        }
-      },
-      0.0);
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {

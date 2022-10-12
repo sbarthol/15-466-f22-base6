@@ -43,7 +43,7 @@ struct Player {
 
 	//player state (sent from server):
 	bool gun_fired = false;
-	glm::vec3 position = glm::vec3(0.0f);
+	glm::vec3 position;
 };
 
 struct Game {

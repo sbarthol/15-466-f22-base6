@@ -103,17 +103,18 @@ bool Player::Controls::recv_controls_message(Connection *connection_) {
 //-----------------------------------------
 
 Game::Game() : mt(0x15466666) {
-	gun.position = glm::vec3(-0.017265, -0.325555, -1.490802);
+	gun.position = glm::vec3(-0.221, -2.811, 1.733);
 	chicken.position = glm::vec3(0.037534, 24.196751, 2.877845);
 }
 
 
 void Game::update(float elapsed) {
-	//move camera:
+	
+	//move gun:
 	{
 
 		//combine inputs into a move:
-		constexpr float GunSpeed = 2.5f;
+		constexpr float GunSpeed = 5.0f;
 		glm::vec2 move = glm::vec2(0.0f);
 		if (gun.controls.left.pressed && !gun.controls.right.pressed) move.x =-1.0f;
 		if (!gun.controls.left.pressed && gun.controls.right.pressed) move.x = 1.0f;
@@ -124,7 +125,7 @@ void Game::update(float elapsed) {
 		if (move != glm::vec2(0.0f)) move = glm::normalize(move) * GunSpeed * elapsed;
 
 		gun.position.x += move.x;
-		gun.position.y += move.y;
+		gun.position.z += move.y;
 
 		//reset button press counters:
 		gun.controls.left.downs = 0;
@@ -146,11 +147,14 @@ void Game::update(float elapsed) {
 		if (!chicken.controls.down.pressed && chicken.controls.up.pressed) move.y = 1.0f;
 
 		//make it so that moving diagonally doesn't go faster:
-		constexpr float ChickenSpeed = 13.f;
+		constexpr float ChickenSpeed = 8.f;
 		if (move != glm::vec2(0.0f)) move = glm::normalize(move) * ChickenSpeed * elapsed;
 
 		chicken.position.x += move.x;
 		chicken.position.z += move.y;
+
+		chicken.position.x = std::clamp(chicken.position.x, -17.f, 17.f);
+		chicken.position.z = std::clamp(chicken.position.z, -6.f, 12.f);
 
 		//reset button press counters:
 		chicken.controls.left.downs = 0;
