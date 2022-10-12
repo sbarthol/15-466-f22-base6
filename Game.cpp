@@ -102,7 +102,10 @@ bool Player::Controls::recv_controls_message(Connection *connection_) {
 
 //-----------------------------------------
 
-Game::Game() : mt(0x15466666) {}
+Game::Game() : mt(0x15466666) {
+	gun.position = glm::vec3(-0.017265, -0.325555, -1.490802);
+	chicken.position = glm::vec3(0.037534, 24.196751, 2.877845);
+}
 
 
 void Game::update(float elapsed) {
@@ -110,7 +113,7 @@ void Game::update(float elapsed) {
 	{
 
 		//combine inputs into a move:
-		constexpr float GunSpeed = 2.5f;
+		constexpr float GunSpeed = 5.0f;
 		glm::vec2 move = glm::vec2(0.0f);
 		if (gun.controls.left.pressed && !gun.controls.right.pressed) move.x =-1.0f;
 		if (!gun.controls.left.pressed && gun.controls.right.pressed) move.x = 1.0f;
