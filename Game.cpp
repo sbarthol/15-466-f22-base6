@@ -131,13 +131,11 @@ void Game::update(float elapsed) {
 		gun.controls.right.downs = 0;
 		gun.controls.up.downs = 0;
 		gun.controls.down.downs = 0;
-		gun.controls.space_pressed = false;
 	}
 
 	{ // fire gun
-		if (gun.controls.space_pressed) {
-			gun.gun_fired = true;
-		}
+		gun.gun_fired = gun.controls.jump.pressed;
+		gun.controls.jump.downs = 0;
 	}
 
 	{ // move chicken

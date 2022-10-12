@@ -69,7 +69,7 @@ void PlayMode::fire_gun() {
   Scene::Transform *transform = new Scene::Transform();
   transform->position =
       glm::vec3(gun->position.x, impact->position.y,
-                gun->position.z - 3);
+                gun->position.y - 3);
   transform->scale = impact->scale;
   transform->rotation = impact->rotation;
 
@@ -150,7 +150,6 @@ bool PlayMode::handle_event(SDL_Event const &evt,
       controls.down.pressed = true;
       return true;
     } else if (evt.key.keysym.sym == SDLK_SPACE) {
-      controls.jump.downs += 1;
       controls.jump.pressed = true;
       return true;
     }
@@ -167,10 +166,7 @@ bool PlayMode::handle_event(SDL_Event const &evt,
     } else if (evt.key.keysym.sym == SDLK_s) {
       controls.down.pressed = false;
       return true;
-    } else if (evt.key.keysym.sym == SDLK_SPACE) {
-      controls.jump.pressed = false;
-      return true;
-    }
+    } 
   }
 
   return false;
@@ -185,7 +181,7 @@ void PlayMode::update(float elapsed) {
   controls.right.downs = 0;
   controls.up.downs = 0;
   controls.down.downs = 0;
-  controls.jump.downs = 0;
+	controls.jump.pressed = false;
 
   // send/receive data:
   client.poll(

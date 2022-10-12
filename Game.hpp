@@ -32,7 +32,6 @@ struct Player {
 	//player inputs (sent from client):
 	struct Controls {
 		Button left, right, up, down, jump;
-		bool space_pressed = false;
 
 		void send_controls_message(Connection *connection) const;
 
