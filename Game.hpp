@@ -65,7 +65,6 @@ struct Game {
 	//constants:
 	//the update rate on the server:
 	inline static constexpr float Tick = 1.0f / 30.0f;
-	// Todo: set back to 1.0f / 30.0f;
 
 	//---- communication helpers ----
 
